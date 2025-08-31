@@ -5,12 +5,19 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
+-- CRIE UMA SCREENGUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "KamuiHub"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
 -- Frame principal (arrastável)
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 360, 0, 440)
 MainFrame.Position = UDim2.new(0.5, -180, 0.12, 0)
 MainFrame.BackgroundTransparency = 1
-MainFrame.Parent = player:WaitForChild("PlayerGui")
+MainFrame.Parent = ScreenGui
 MainFrame.Active = true
 MainFrame.Draggable = true
 
@@ -149,7 +156,7 @@ OpenIcon.Position = UDim2.new(0, 20, 0.92, 0)
 OpenIcon.Image = "rbxassetid://6031091002"
 OpenIcon.BackgroundTransparency = 1
 OpenIcon.Visible = false
-OpenIcon.Parent = player:WaitForChild("PlayerGui")
+OpenIcon.Parent = ScreenGui
 
 -- Funções dos botões
 local infJump = false
