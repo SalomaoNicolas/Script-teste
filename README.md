@@ -1,40 +1,29 @@
--- KamuiHub - GUI com Inf Jump, GodMode, Teleporte, NoClip, Velocidade, Teleporte para Jogador, Anti-AFK, Click Teleport (CTRL+Clique)
+-- KamuiHub - GUI arrastável e com rolagem para mostrar todas as funções.
+-- Inclui: Inf Jump, GodMode, Teleporte, NoClip, Velocidade, Teleporte para Jogador, Click Teleport, Anti-AFK.
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
--- Função para criar cantos arredondados
-local function roundify(obj, radius)
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, radius)
-    corner.Parent = obj
-end
-
--- Função para criar efeito hover nos botões
-local function addHoverEffect(btn, baseColor, hoverColor)
-    btn.MouseEnter:Connect(function()
-        btn.BackgroundColor3 = hoverColor
-    end)
-    btn.MouseLeave:Connect(function()
-        btn.BackgroundColor3 = baseColor
-    end)
-end
-
--- GUI Principal
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "KamuiHub"
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
-ScreenGui.ResetOnSpawn = false
+-- Frame principal (arrastável)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 360, 0, 440)
+MainFrame.Position = UDim2.new(0.5, -180, 0.12, 0)
+MainFrame.BackgroundTransparency = 1
+MainFrame.Parent = player:WaitForChild("PlayerGui")
+MainFrame.Active = true
+MainFrame.Draggable = true
 
 -- Barra superior
 local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(0, 340, 0, 36)
-TopBar.Position = UDim2.new(0.5, -170, 0.09, 0)
+TopBar.Size = UDim2.new(1, 0, 0, 36)
+TopBar.Position = UDim2.new(0, 0, 0, 0)
 TopBar.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
 TopBar.BackgroundTransparency = 0.1
-TopBar.Parent = ScreenGui
-roundify(TopBar, 18)
+TopBar.Parent = MainFrame
+local corner = Instance.new("UICorner", TopBar)
+corner.CornerRadius = UDim.new(0, 18)
+TopBar.Active = false -- só o MainFrame é arrastável
 
 -- Título
 local Title = Instance.new("TextLabel")
@@ -59,8 +48,10 @@ MinButton.TextSize = 26
 MinButton.BackgroundColor3 = Color3.fromRGB(85, 85, 120)
 MinButton.TextColor3 = Color3.new(1, 1, 1)
 MinButton.Parent = TopBar
-roundify(MinButton, 10)
-addHoverEffect(MinButton, Color3.fromRGB(85,85,120), Color3.fromRGB(110,110,160))
+local corner2 = Instance.new("UICorner", MinButton)
+corner2.CornerRadius = UDim.new(0, 10)
+MinButton.MouseEnter:Connect(function() MinButton.BackgroundColor3 = Color3.fromRGB(110,110,160) end)
+MinButton.MouseLeave:Connect(function() MinButton.BackgroundColor3 = Color3.fromRGB(85,85,120) end)
 
 -- Botão fechar
 local CloseButton = Instance.new("TextButton")
@@ -72,66 +63,12 @@ CloseButton.TextSize = 22
 CloseButton.BackgroundColor3 = Color3.fromRGB(140, 40, 60)
 CloseButton.TextColor3 = Color3.new(1, 1, 1)
 CloseButton.Parent = TopBar
-roundify(CloseButton, 10)
-addHoverEffect(CloseButton, Color3.fromRGB(140,40,60), Color3.fromRGB(190,70,90))
+local corner3 = Instance.new("UICorner", CloseButton)
+corner3.CornerRadius = UDim.new(0, 10)
+CloseButton.MouseEnter:Connect(function() CloseButton.BackgroundColor3 = Color3.fromRGB(190,70,90) end)
+CloseButton.MouseLeave:Connect(function() CloseButton.BackgroundColor3 = Color3.fromRGB(140,40,60) end)
 
--- Área dos botões (container)
-local BtnFrame = Instance.new("Frame")
-BtnFrame.Size = UDim2.new(0, 340, 0, 395)
-BtnFrame.Position = UDim2.new(0.5, -170, 0.09, 46)
-BtnFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
-BtnFrame.BackgroundTransparency = 0.15
-BtnFrame.Parent = ScreenGui
-roundify(BtnFrame, 18)
-
--- Template botão estilizado
-local function createButton(txt, posY)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.94, 0, 0, 38)
-    btn.Position = UDim2.new(0.03, 0, 0, posY)
-    btn.Text = txt
-    btn.Font = Enum.Font.Gotham
-    btn.TextSize = 18
-    btn.BackgroundColor3 = Color3.fromRGB(60, 85, 135)
-    btn.TextColor3 = Color3.fromRGB(240, 240, 255)
-    btn.AutoButtonColor = false
-    btn.Parent = BtnFrame
-    roundify(btn, 10)
-    addHoverEffect(btn, Color3.fromRGB(60,85,135), Color3.fromRGB(100,130,200))
-    return btn
-end
-
--- Botões
-local InfJumpButton = createButton("Inf Jump: OFF", 10)
-local GodModeButton = createButton("Invencibilidade: OFF", 58)
-local TeleportButton = createButton("Teleporte para Base", 106)
-local NoClipButton = createButton("NoClip: OFF", 154)
-local SpeedButton = createButton("Velocidade: NORMAL", 202)
-local TeleportToPlayerButton = createButton("Teleportar para Jogador", 250)
-local ClickTeleportButton = createButton("Click Teleport: OFF (CTRL+Clique)", 298)
-
--- Input para nome do alvo (TextBox)
-local TargetBox = Instance.new("TextBox")
-TargetBox.Size = UDim2.new(0.94, 0, 0, 30)
-TargetBox.Position = UDim2.new(0.03, 0, 0, 343)
-TargetBox.BackgroundColor3 = Color3.fromRGB(40, 60, 110)
-TargetBox.TextColor3 = Color3.new(1,1,1)
-TargetBox.PlaceholderText = "Nome do Jogador para TP"
-TargetBox.Font = Enum.Font.Gotham
-TargetBox.TextSize = 16
-TargetBox.Parent = BtnFrame
-roundify(TargetBox, 10)
-
--- Ícone reabrir
-local OpenIcon = Instance.new("ImageButton")
-OpenIcon.Size = UDim2.new(0, 48, 0, 48)
-OpenIcon.Position = UDim2.new(0, 20, 0.92, 0)
-OpenIcon.Image = "rbxassetid://6031091002"
-OpenIcon.BackgroundTransparency = 1
-OpenIcon.Visible = false
-OpenIcon.Parent = ScreenGui
-
--- Sombra para a interface (opcional)
+-- Sombra para TopBar
 local function addShadow(obj)
     local shadow = Instance.new("ImageLabel")
     shadow.Name = "Shadow"
@@ -146,9 +83,75 @@ local function addShadow(obj)
     shadow.Parent = obj
 end
 addShadow(TopBar)
-addShadow(BtnFrame)
 
--- Variáveis de controle
+-- ScrollFrame para os botões (rolagem)
+local BtnScroll = Instance.new("ScrollingFrame")
+BtnScroll.Size = UDim2.new(1, 0, 1, -46)
+BtnScroll.Position = UDim2.new(0, 0, 0, 46)
+BtnScroll.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
+BtnScroll.BackgroundTransparency = 0.15
+BtnScroll.BorderSizePixel = 0
+BtnScroll.Parent = MainFrame
+BtnScroll.CanvasSize = UDim2.new(0, 0, 0, 500) -- aumenta se adicionar mais funções
+BtnScroll.ScrollBarThickness = 8
+local corner4 = Instance.new("UICorner", BtnScroll)
+corner4.CornerRadius = UDim.new(0, 18)
+addShadow(BtnScroll)
+
+-- Template botão estilizado
+local function createButton(txt, posY)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.94, 0, 0, 38)
+    btn.Position = UDim2.new(0.03, 0, 0, posY)
+    btn.Text = txt
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 18
+    btn.BackgroundColor3 = Color3.fromRGB(60, 85, 135)
+    btn.TextColor3 = Color3.fromRGB(240, 240, 255)
+    btn.AutoButtonColor = false
+    btn.Parent = BtnScroll
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 10)
+    btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(100,130,200) end)
+    btn.MouseLeave:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(60,85,135) end)
+    return btn
+end
+
+-- Botões e inputs
+local posY = 10
+local InfJumpButton = createButton("Inf Jump: OFF", posY); posY = posY + 48
+local GodModeButton = createButton("Invencibilidade: OFF", posY); posY = posY + 48
+local TeleportButton = createButton("Teleporte para Base", posY); posY = posY + 48
+local NoClipButton = createButton("NoClip: OFF", posY); posY = posY + 48
+local SpeedButton = createButton("Velocidade: NORMAL", posY); posY = posY + 48
+local TeleportToPlayerButton = createButton("Teleportar para Jogador", posY); posY = posY + 48
+local ClickTeleportButton = createButton("Click Teleport: OFF (CTRL+Clique)", posY); posY = posY + 48
+
+local TargetBox = Instance.new("TextBox")
+TargetBox.Size = UDim2.new(0.94, 0, 0, 30)
+TargetBox.Position = UDim2.new(0.03, 0, 0, posY)
+TargetBox.BackgroundColor3 = Color3.fromRGB(40, 60, 110)
+TargetBox.TextColor3 = Color3.new(1,1,1)
+TargetBox.PlaceholderText = "Nome do Jogador para TP"
+TargetBox.Font = Enum.Font.Gotham
+TargetBox.TextSize = 16
+TargetBox.Parent = BtnScroll
+local corner5 = Instance.new("UICorner", TargetBox)
+corner5.CornerRadius = UDim.new(0, 10)
+posY = posY + 38
+
+BtnScroll.CanvasSize = UDim2.new(0, 0, 0, posY + 20)
+
+-- Ícone reabrir
+local OpenIcon = Instance.new("ImageButton")
+OpenIcon.Size = UDim2.new(0, 48, 0, 48)
+OpenIcon.Position = UDim2.new(0, 20, 0.92, 0)
+OpenIcon.Image = "rbxassetid://6031091002"
+OpenIcon.BackgroundTransparency = 1
+OpenIcon.Visible = false
+OpenIcon.Parent = player:WaitForChild("PlayerGui")
+
+-- Funções dos botões
 local infJump = false
 local godMode = false
 local godModeLoop = nil
@@ -160,7 +163,7 @@ local fastSpeed = 100
 local clickTeleportActive = false
 local clickTeleportConn
 
--- Função Inf Jump
+-- Inf Jump
 InfJumpButton.MouseButton1Click:Connect(function()
     infJump = not infJump
     InfJumpButton.Text = infJump and "Inf Jump: ON" or "Inf Jump: OFF"
@@ -175,7 +178,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- Função GodMode
+-- GodMode
 GodModeButton.MouseButton1Click:Connect(function()
     godMode = not godMode
     GodModeButton.Text = godMode and "Invencibilidade: ON" or "Invencibilidade: OFF"
@@ -199,8 +202,8 @@ GodModeButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Função Teleporte (troque o Vector3 pela posição real da sua base!)
-local basePosition = Vector3.new(100, 5, 200) -- Troque aqui!
+-- Teleporte (ajuste basePosition para sua base)
+local basePosition = Vector3.new(100, 5, 200)
 TeleportButton.MouseButton1Click:Connect(function()
     local char = player.Character or player.CharacterAdded:Wait()
     if char and char:FindFirstChild("HumanoidRootPart") then
@@ -208,7 +211,7 @@ TeleportButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Função NoClip otimizada
+-- NoClip
 local function onTouched(part)
     if not noclipActive then return end
     if not part:IsA("BasePart") then return end
@@ -248,7 +251,7 @@ player.CharacterAdded:Connect(function()
     if noclipActive then enableNoClip() end
 end)
 
--- Função Velocidade
+-- Velocidade
 SpeedButton.MouseButton1Click:Connect(function()
     speedActive = not speedActive
     local char = player.Character or player.CharacterAdded:Wait()
@@ -263,14 +266,12 @@ SpeedButton.MouseButton1Click:Connect(function()
         end
     end
 end)
-
--- Garante que a velocidade é aplicada ao renascer
 player.CharacterAdded:Connect(function(char)
     local hum = char:WaitForChild("Humanoid")
     hum.WalkSpeed = speedActive and fastSpeed or normalSpeed
 end)
 
--- Teleportar para outro jogador
+-- TP para outro jogador
 TeleportToPlayerButton.MouseButton1Click:Connect(function()
     local targetUsername = TargetBox.Text
     if targetUsername ~= nil and targetUsername ~= "" then
@@ -290,7 +291,6 @@ end)
 if _G.WRDClickTeleport == nil then
     _G.WRDClickTeleport = false
 end
-
 local function setClickTeleport(state)
     clickTeleportActive = state
     ClickTeleportButton.Text = clickTeleportActive and "Click Teleport: ON (CTRL+Clique)" or "Click Teleport: OFF (CTRL+Clique)"
@@ -317,26 +317,21 @@ local function setClickTeleport(state)
         game.StarterGui:SetCore("SendNotification", {Title="KamuiHub"; Text="Click teleport desativado"; Duration=5;})
     end
 end
-
 ClickTeleportButton.MouseButton1Click:Connect(function()
     setClickTeleport(not clickTeleportActive)
 end)
 
 -- Minimizar e reabrir GUI
 MinButton.MouseButton1Click:Connect(function()
-    TopBar.Visible = false
-    BtnFrame.Visible = false
+    MainFrame.Visible = false
     OpenIcon.Visible = true
 end)
 OpenIcon.MouseButton1Click:Connect(function()
-    TopBar.Visible = true
-    BtnFrame.Visible = true
+    MainFrame.Visible = true
     OpenIcon.Visible = false
 end)
-
--- Fechar GUI
 CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
+    MainFrame:Destroy()
 end)
 
 -------------------
@@ -348,7 +343,6 @@ antiAFKGui.Name = "AntiAFKGui"
 antiAFKGui.Parent = game:GetService("CoreGui")
 antiAFKGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Janela principal
 local mainLabel = Instance.new("TextLabel")
 mainLabel.Parent = antiAFKGui
 mainLabel.Active = true
@@ -361,14 +355,12 @@ mainLabel.Text = "Script Anti AFK"
 mainLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
 mainLabel.TextSize = 22
 
--- Quadro de status
 local statusFrame = Instance.new("Frame")
 statusFrame.Parent = mainLabel
 statusFrame.BackgroundColor3 = Color3.fromRGB(0, 196, 196)
 statusFrame.Position = UDim2.new(0, 0, 1, 2)
 statusFrame.Size = UDim2.new(0, 370, 0, 107)
 
--- Autor
 local autorLabel = Instance.new("TextLabel")
 autorLabel.Parent = statusFrame
 autorLabel.BackgroundColor3 = Color3.fromRGB(0, 176, 176)
@@ -379,7 +371,6 @@ autorLabel.Text = "Derrapou por Mattie/Parasita"
 autorLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
 autorLabel.TextSize = 20
 
--- Status
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Parent = statusFrame
 statusLabel.BackgroundColor3 = Color3.fromRGB(0, 176, 176)
