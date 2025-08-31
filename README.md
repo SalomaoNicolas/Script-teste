@@ -1,85 +1,235 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- Kamuu - GUI com Inf Jump, GodMode, Teleporte e NoClip Otimizado
+
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
--- Cria o RemoteEvent se não existir
-local spawnEvent = ReplicatedStorage:FindFirstChild("SpawnBrainrotEvent")
-if not spawnEvent then
-    spawnEvent = Instance.new("RemoteEvent")
-    spawnEvent.Name = "SpawnBrainrotEvent"
-    spawnEvent.Parent = ReplicatedStorage
-end
+-- GUI Principal
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Kamuu"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
 
--- Cria a interface
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "BrainrotSpawnerGUI"
-screenGui.Parent = player:WaitForChild("PlayerGui")
+-- Barra superior
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(0, 300, 0, 30)
+TopBar.Position = UDim2.new(0.5, -150, 0.1, 0)
+TopBar.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+TopBar.Parent = ScreenGui
 
-local brainrots = {
-    {name="Dragon", id="Dragon"},
-    {name="Cannelloni", id="Cannelloni"},
-    {name="Los", id="Los"},
-    {name="Combinasionas", id="Combinasionas"},
-    {name="La Supreme Combinasion", id="La Supreme Combinasion"},
-    {name="Ketupat Kepat", id="Ketupat Kepat"},
-}
+-- Título
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 1, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Kamuu"
+Title.Font = Enum.Font.SourceSansBold
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 20
+Title.Parent = TopBar
 
-for i, brainrot in ipairs(brainrots) do
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0, 250, 0, 40)
-    button.Position = UDim2.new(0, 20, 0, 20 + (i-1)*50)
-    button.Text = "Spawnar "..brainrot.name.." na Passarela"
-    button.Parent = screenGui
+-- Botão minimizar
+local MinButton = Instance.new("TextButton")
+MinButton.Size = UDim2.new(0, 30, 1, 0)
+MinButton.Position = UDim2.new(1, -60, 0, 0)
+MinButton.Text = "-"
+MinButton.Font = Enum.Font.SourceSansBold
+MinButton.TextSize = 20
+MinButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+MinButton.TextColor3 = Color3.new(1, 1, 1)
+MinButton.Parent = TopBar
 
-    button.MouseButton1Click:Connect(function()
-        spawnEvent:FireServer(brainrot.id)
-    end)
-end
+-- Botão fechar
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 30, 1, 0)
+CloseButton.Position = UDim2.new(1, -30, 0, 0)
+CloseButton.Text = "X"
+CloseButton.Font = Enum.Font.SourceSansBold
+CloseButton.TextSize = 20
+CloseButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+CloseButton.TextColor3 = Color3.new(1, 1, 1)
+CloseButton.Parent = TopBar
 
--- Script do lado do servidor (executa apenas se estiver em contexto de servidor)
-if game:GetService("RunService"):IsServer() then
-    spawnEvent.OnServerEvent:Connect(function(plr, tipo)
-        local brainrotsFolder = ReplicatedStorage:FindFirstChild("Brainrots")
-        if not brainrotsFolder then return end
-        local model = brainrotsFolder:FindFirstChild(tipo)
-        if model then
-            local clone = model:Clone()
-            clone.Parent = workspace
+-- Botão Inf Jump
+local InfJumpButton = Instance.new("TextButton")
+InfJumpButton.Size = UDim2.new(0, 280, 0, 40)
+InfJumpButton.Position = UDim2.new(0.5, -140, 0.1, 40)
+InfJumpButton.Text = "Inf Jump: OFF"
+InfJumpButton.Font = Enum.Font.SourceSans
+InfJumpButton.TextSize = 18
+InfJumpButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+InfJumpButton.TextColor3 = Color3.new(1, 1, 1)
+InfJumpButton.Parent = ScreenGui
 
-            -- Procura a Passarela no Workspace
-            local passarela = workspace:FindFirstChild("Passarela")
+-- Botão GodMode
+local GodModeButton = Instance.new("TextButton")
+GodModeButton.Size = UDim2.new(0, 280, 0, 40)
+GodModeButton.Position = UDim2.new(0.5, -140, 0.1, 90)
+GodModeButton.Text = "Invencibilidade: OFF"
+GodModeButton.Font = Enum.Font.SourceSans
+GodModeButton.TextSize = 18
+GodModeButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+GodModeButton.TextColor3 = Color3.new(1, 1, 1)
+GodModeButton.Parent = ScreenGui
 
-            -- Define a PrimaryPart se não tiver
-            if not clone.PrimaryPart then
-                clone.PrimaryPart = clone:FindFirstChildWhichIsA("BasePart")
-            end
+-- Botão Teleporte
+local TeleportButton = Instance.new("TextButton")
+TeleportButton.Size = UDim2.new(0, 280, 0, 40)
+TeleportButton.Position = UDim2.new(0.5, -140, 0.1, 140)
+TeleportButton.Text = "Teleporte para Base"
+TeleportButton.Font = Enum.Font.SourceSans
+TeleportButton.TextSize = 18
+TeleportButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+TeleportButton.TextColor3 = Color3.new(1, 1, 1)
+TeleportButton.Parent = ScreenGui
 
-            if passarela and passarela:IsA("BasePart") then
-                -- Centraliza na passarela, levemente acima
-                local pos = passarela.Position + Vector3.new(0, (passarela.Size.Y/2) + 4, 0)
-                if clone.PrimaryPart then
-                    clone:SetPrimaryPartCFrame(CFrame.new(pos))
-                else
-                    clone:MoveTo(pos)
-                end
-            elseif passarela and passarela:IsA("Model") and passarela.PrimaryPart then
-                local pos = passarela.PrimaryPart.Position + Vector3.new(0, (passarela.PrimaryPart.Size.Y/2) + 4, 0)
-                if clone.PrimaryPart then
-                    clone:SetPrimaryPartCFrame(CFrame.new(pos))
-                else
-                    clone:MoveTo(pos)
-                end
-            else
-                -- Se não existir passarela, spawna na frente do jogador
-                local char = plr.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    if clone.PrimaryPart then
-                        clone:SetPrimaryPartCFrame(char.HumanoidRootPart.CFrame * CFrame.new(0, 0, -5))
-                    else
-                        clone:MoveTo(char.HumanoidRootPart.Position + Vector3.new(0,0,-5))
-                    end
-                end
-            end
+-- Botão NoClip
+local NoClipButton = Instance.new("TextButton")
+NoClipButton.Size = UDim2.new(0, 280, 0, 40)
+NoClipButton.Position = UDim2.new(0.5, -140, 0.1, 190)
+NoClipButton.Text = "NoClip: OFF"
+NoClipButton.Font = Enum.Font.SourceSans
+NoClipButton.TextSize = 18
+NoClipButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+NoClipButton.TextColor3 = Color3.new(1, 1, 1)
+NoClipButton.Parent = ScreenGui
+
+-- Ícone reabrir
+local OpenIcon = Instance.new("ImageButton")
+OpenIcon.Size = UDim2.new(0, 50, 0, 50)
+OpenIcon.Position = UDim2.new(0, 10, 0.9, 0)
+OpenIcon.Image = "rbxassetid://3926305904"
+OpenIcon.ImageRectOffset = Vector2.new(4, 4)
+OpenIcon.ImageRectSize = Vector2.new(36, 36)
+OpenIcon.Visible = false
+OpenIcon.BackgroundTransparency = 1
+OpenIcon.Parent = ScreenGui
+
+-- Variáveis de controle
+local infJump = false
+local godMode = false
+local godModeLoop = nil
+local noclipActive = false
+local noclipConnection = nil
+
+-- Função Inf Jump
+InfJumpButton.MouseButton1Click:Connect(function()
+    infJump = not infJump
+    InfJumpButton.Text = infJump and "Inf Jump: ON" or "Inf Jump: OFF"
+end)
+
+UserInputService.JumpRequest:Connect(function()
+    if infJump then
+        local char = player.Character or player.CharacterAdded:Wait()
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum:ChangeState(Enum.HumanoidStateType.Jumping)
         end
-    end)
+    end
+end)
+
+-- Função GodMode
+GodModeButton.MouseButton1Click:Connect(function()
+    godMode = not godMode
+    GodModeButton.Text = godMode and "Invencibilidade: ON" or "Invencibilidade: OFF"
+    if godMode and not godModeLoop then
+        godModeLoop = task.spawn(function()
+            while godMode do
+                local char = player.Character or player.CharacterAdded:Wait()
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum.Health = hum.MaxHealth
+                    hum.MaxHealth = math.huge
+                    hum.Health = math.huge
+                    hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+                end
+                task.wait(0.05)
+            end
+            godModeLoop = nil
+        end)
+    elseif not godMode and godModeLoop then
+        godModeLoop = nil
+    end
+end)
+
+-- Função Teleporte (troque o Vector3 pela posição real da sua base!)
+local basePosition = Vector3.new(100, 5, 200) -- Troque aqui!
+TeleportButton.MouseButton1Click:Connect(function()
+    local char = player.Character or player.CharacterAdded:Wait()
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(basePosition)
+    end
+end)
+
+-- Função NoClip otimizada
+local function onTouched(part)
+    if not noclipActive then return end
+    if not part:IsA("BasePart") then return end
+    if not part.Anchored then return end
+    if not part.CanCollide then return end
+
+    local character = player.Character
+    if not character then return end
+
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    if part.Position.Y < (hrp.Position.Y - hrp.Size.Y) then return end
+
+    part.CanCollide = false
 end
+
+local function enableNoClip()
+    if noclipConnection then
+        noclipConnection:Disconnect()
+    end
+    local character = player.Character
+    if not character then return end
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    noclipConnection = hrp.Touched:Connect(onTouched)
+end
+
+local function disableNoClip()
+    if noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
+    end
+end
+
+NoClipButton.MouseButton1Click:Connect(function()
+    noclipActive = not noclipActive
+    NoClipButton.Text = noclipActive and "NoClip: ON" or "NoClip: OFF"
+    disableNoClip()
+    if noclipActive then
+        enableNoClip()
+    end
+end)
+
+player.CharacterAdded:Connect(function()
+    if noclipActive then
+        enableNoClip()
+    end
+end)
+
+-- Minimizar e reabrir GUI
+MinButton.MouseButton1Click:Connect(function()
+    TopBar.Visible = false
+    InfJumpButton.Visible = false
+    GodModeButton.Visible = false
+    TeleportButton.Visible = false
+    NoClipButton.Visible = false
+    OpenIcon.Visible = true
+end)
+OpenIcon.MouseButton1Click:Connect(function()
+    TopBar.Visible = true
+    InfJumpButton.Visible = true
+    GodModeButton.Visible = true
+    TeleportButton.Visible = true
+    NoClipButton.Visible = true
+    OpenIcon.Visible = false
+end)
+
+-- Fechar GUI
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
